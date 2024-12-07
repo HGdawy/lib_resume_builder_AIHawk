@@ -8,6 +8,7 @@ from typing import Dict, List
 from langchain_community.document_loaders import TextLoader
 from langchain_core.messages.ai import AIMessage
 from langchain_core.output_parsers import StrOutputParser
+from .llm_models import OpenAIChatModel, GeminiChatModel
 from langchain_core.prompt_values import StringPromptValue
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
@@ -45,7 +46,7 @@ logger = logging.getLogger(__name__)
 
 class LLMLogger:
     
-    def __init__(self, llm: ChatOpenAI):
+    def __init__(self, llm):
         self.llm = llm
 
     @staticmethod
@@ -103,7 +104,7 @@ class LLMLogger:
 
 class LoggerChatModel:
 
-    def __init__(self, llm: ChatOpenAI):
+    def __init__(self, llm):
         self.llm = llm
 
 
@@ -162,12 +163,15 @@ class LoggerChatModel:
 
 
 class LLMResumer:
-    def __init__(self, openai_api_key, strings):
-        self.llm_cheap = LoggerChatModel(
-            ChatOpenAI(
-                model_name="gpt-4o-mini", openai_api_key=openai_api_key, temperature=0.4
-            )
-        )
+    def __init__(self, api_key, strings, model_type="gemini"):
+        if model_type == "openai":
+            model = OpenAIChatModel("gpt-4o-mini", api_key)
+        elif model_type == "gemini":
+            model = GeminiChatModel("gemini-1.5-flash",api_key)
+        else:
+            raise ValueError(f"Unsupported model type: {model_type}")
+        
+        self.llm_cheap = LoggerChatModel(model)
         self.strings = strings
 
     @staticmethod
